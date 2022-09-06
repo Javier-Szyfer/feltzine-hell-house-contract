@@ -179,6 +179,8 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
             revert FJORD_TotalMinted();
         } else if (msg.value != PRICE_PER_PUBLIC_MINT * _amount) {
             revert FJORD_InexactPayment();
+        } else if (mintCounter + _amount > TOTAL_SUPPLY){
+            revert FJORD_MaxMintExceeded();
         } else {
             uint256 i;
             for (i = 0; i < _amount; i++) {
