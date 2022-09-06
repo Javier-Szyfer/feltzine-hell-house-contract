@@ -74,13 +74,13 @@ describe("FjordDrop", function () {
   });
 
   describe("Minting", function () {
-    describe("Minting via Copper", function () {
+    describe("Minting via Fjord", function () {
       it("Should revert if all tokens were minted", async function () {
         //CODE HERE
       });
       it("Should mint one NFT via Fjord's contract", async function () {
         //fakeCopperAddress is a random address - not whitelisted -
-        //just used to impersonate Copper
+        //just used to impersonate Fjord
         const { fjordDrop, mainnetFjordAddress } = await loadFixture(
           deployFjordDrop
         );
@@ -266,7 +266,7 @@ describe("FjordDrop", function () {
     it("Reverts if amount is insufficient", async function () {
       const { fjordDrop, acc2, oneNFTPrice, threeNFTsPrice } =
         await loadFixture(deployFjordDrop);
-      await fjordDrop.setIsPublicMintActive(true);
+      await fjordDrop.setMintStage(4);
       await fjordDrop.setPublicMintPrice(threeNFTsPrice);
       await expect(
         fjordDrop.connect(acc2).publicMint(1, {
@@ -284,7 +284,7 @@ describe("FjordDrop", function () {
           "Ownable: caller is not the owner"
         );
       });
-      it("Royalities are 15%", async function () {
+      it("Royalities are 10%", async function () {
         const { fjordDrop } = await loadFixture(deployFjordDrop);
         const royalty = await fjordDrop.royaltyInfo(1, 100);
         console.log(
@@ -292,12 +292,12 @@ describe("FjordDrop", function () {
           ethers.BigNumber.from(royalty.royaltyAmount).toString()
         );
         console.log("royaltyBenefitiary:", royalty.receiver);
-        expect(royalty.royaltyAmount).to.be.equal(15);
+        expect(royalty.royaltyAmount).to.be.equal(10);
         expect(royalty.receiver).to.be.equal(fjordDrop.address);
       });
     });
-    it("Should send all the balance to the payThroughSplits address", async function () {
-      const { fjordDrop, acc3, acc2, twoNFTsPrice, acc4 } = await loadFixture(
+    it("Should send all the balance to the payout addressess", async function () {
+      const { fjordDrop, acc2, twoNFTsPrice, acc4 } = await loadFixture(
         deployFjordDrop
       );
       //testing with the whitelisted address and function
@@ -345,11 +345,12 @@ describe("FjordDrop", function () {
       );
       expect(contractBalanceAfterWithdraw).to.equal(0);
       // checks the balance of the splits address
-      const balanceSplitsAddress = await provider.getBalance(acc3.address);
-      const formattedReceiverBalance =
-        ethers.utils.formatEther(balanceSplitsAddress);
-      console.log("balanceSplitsAddress balance", formattedReceiverBalance);
-      expect(formattedReceiverBalance).to.equal("10100.04");
+      const feltzine = 0x5e080d8b14c1da5936509c2c9ef0168a19304202;
+      const artist = 0xb012a1bdca34e1d0c2267bb50e6c53c8042eb4b6;
+      const dev = 0x52aa63a67b15e3c2f201c9422cac1e81bd6ea847;
+      const feltzineBalance = provider.getBalance(feltzine);
+      const artistBalance = provider.getBalance(artist);
+      const devBalance = provider.getBalance(dev);
     });
   });
 });
