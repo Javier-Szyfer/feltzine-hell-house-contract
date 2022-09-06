@@ -57,6 +57,7 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
     uint32 private constant MAX_MINT_PER_WHITELIST_WALLET = 2;
     mapping(address => uint32) public mintPerWhitelistedWallet;
     uint256 private PRICE_PER_PUBLIC_MINT;
+    
     enum MintPhase {
     ONLY_MINT_OWNER,    
     NOT_ACTIVE,
@@ -75,14 +76,14 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
     ) ERC721("Fjord Collection #1", "FJORD") {
         customBaseURI = customBaseURI_;
         whiteListSaleMerkleRoot = whiteListSaleMerkleRoot_;
-        for (uint i = 0; i < mintQtyToOwner; i++) {
+        for (uint256 i = 0; i < mintQtyToOwner; i++) {
             unchecked {
                 mintCounter++;
             }
             uint256 tokenId = mintCounter;
             _mint(msg.sender, tokenId);
         }
-        setMintStage(MintPhase.NOT_ACTIVE);
+        stage = MintPhase.NOT_ACTIVE;
     }
 
 /*//////////////////////////////////////////////////////////////
@@ -105,7 +106,7 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
 //////////////////////////////////////////////////////////////*/
 
     /// @notice set _time in  Unix Time Stamp to end the whitelist sale
-    function setEndDateWhitelist(uint256 time_) public onlyOwner {
+    function setEndDateWhitelist(uint256 time_) external onlyOwner {
         whitelistEndDate = block.timestamp + time_;
     }
     function setBaseURI(string memory customBaseURI_) external onlyOwner {
@@ -113,7 +114,7 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
     }
     //@notice: owner set the different states of the minting phase
     // 0 = ONLY_MINT_OWNER, 1 = NOT_ACTIVE, 2 = WHITELIST, 3 = FJORD, 4 = PUBLIC
-    function setMintStage(MintPhase val_) public onlyOwner {
+    function setMintStage(MintPhase val_) external onlyOwner {
         stage = val_;
     }
     function setPublicMintPrice(uint256 price) external onlyOwner {
@@ -127,7 +128,7 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
     /// @notice mint implementation interfacing w Erc721BurningErc20OnMint contract
 
     function mint() public override nonReentrant returns (uint256) {
-        if (mintCounter == TOTAL_SUPPLY) {
+        if (mintCounter >= TOTAL_SUPPLY) {
             revert FJORD_TotalMinted();
         }  else  {
             unchecked {
