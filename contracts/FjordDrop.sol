@@ -49,9 +49,9 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
     string public customBaseURI;
     string public contractURI =
         "ipfs://QmdyYCtUsVsC5ymr7b4txQ6hXHpLXtJU7JXCDuHEJdXnRe";
-    address private mainnetFjordAddress =
-        0x6f435948d9ad4cA0a73a3257743528469899ceec;
     uint256 public whitelistEndDate;
+    uint256 private MAX_WHITELIST_MINT = 100;
+    uint256 private MAX_MINT_COUNTER;
     uint256 private constant PRICE_PER_WHITELIST_NFT = 0.02 ether;
     bytes32 public whiteListSaleMerkleRoot;
     uint32 private constant MAX_MINT_PER_WHITELIST_WALLET = 2;
@@ -64,7 +64,7 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
     FJORD,
     PUBLIC
 }
-    MintPhase stage = MintPhase.ONLY_MINT_OWNER;
+    MintPhase public stage = MintPhase.ONLY_MINT_OWNER;
 /*//////////////////////////////////////////////////////////////
                         INIT/CONSTRUCTOR
 //////////////////////////////////////////////////////////////*/
@@ -82,6 +82,7 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
             uint256 tokenId = mintCounter;
             _mint(msg.sender, tokenId);
         }
+        setMintStage(MintPhase.NOT_ACTIVE);
     }
 
 /*//////////////////////////////////////////////////////////////
@@ -104,19 +105,14 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
 //////////////////////////////////////////////////////////////*/
 
     /// @notice set _time in  Unix Time Stamp to end the whitelist sale
-    function setEndDateWhitelist(uint256 time_) public {
+    function setEndDateWhitelist(uint256 time_) public onlyOwner {
         whitelistEndDate = block.timestamp + time_;
     }
-
     function setBaseURI(string memory customBaseURI_) external onlyOwner {
         customBaseURI = customBaseURI_;
     }
-
-    function setFjordContractAddress(address mainnetFjordAddress_) external onlyOwner {
-        mainnetFjordAddress = mainnetFjordAddress_;
-    }
     //@notice: owner set the different states of the minting phase
-    // 0 = NOT_STARTED, 1 = WHITELIST, 2 = FJORD, 3 = PUBLIC
+    // 0 = ONLY_MINT_OWNER, 1 = NOT_ACTIVE, 2 = WHITELIST, 3 = FJORD, 4 = PUBLIC
     function setMintStage(MintPhase val_) public onlyOwner {
         stage = val_;
     }
@@ -154,6 +150,8 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
         uint256 totalMinted = mintPerWhitelistedWallet[msg.sender];
         if (msg.value != PRICE_PER_WHITELIST_NFT * amount) {
             revert FJORD_InexactPayment();
+        } else if(MAX_MINT_COUNTER > MAX_MINT_PER_WHITELIST_WALLET){
+            revert('whitelist mint  exceeded');
         } else if (block.timestamp >= whitelistEndDate) {
             revert FJORD_WhitelistMintEnded();
         } else {
@@ -165,6 +163,7 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
             for (i = 0; i < amount; i++) {
                 unchecked {
                     mintCounter++;
+                    MAX_MINT_COUNTER++;
                     mintPerWhitelistedWallet[msg.sender]++;
                 }
                 // cache the minteCounter as the tokenId to mint
@@ -202,7 +201,6 @@ function _beforeTokenTransfer(
         require(stage != MintPhase.NOT_ACTIVE, "Minting is not active");
         // check if it's a mint through the Fjord's contract
         if (stage == MintPhase.FJORD) {
-            require(to == mainnetFjordAddress, "Invalid fjord address");
             Erc721BurningErc20OnMint._beforeTokenTransfer(from, to, amount);
         } else if(stage == MintPhase.PUBLIC || stage == MintPhase.WHITELIST) {
             ERC721._beforeTokenTransfer(from, to, amount);
@@ -230,7 +228,7 @@ function _beforeTokenTransfer(
         return mintCounter;
     }
 
-    /*//////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////
                 WITHDRAW AND ROYALTIES FUNCTIONS
 //////////////////////////////////////////////////////////////*/
 
