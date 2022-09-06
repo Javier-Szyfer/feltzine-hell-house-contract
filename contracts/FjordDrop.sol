@@ -54,7 +54,7 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
     bytes32 public whiteListSaleMerkleRoot;
     uint32 private constant MAX_MINT_PER_WHITELIST_WALLET = 2;
     mapping(address => uint32) public mintPerWhitelistedWallet;
-    uint256 private PRICE_PER_PUBLIC_MINT;
+    uint256 private PRICE_PER_PUBLIC_MINT= 0.02 ether;
     
     enum MintPhase {
     ONLY_MINT_OWNER,    
@@ -126,7 +126,8 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
     /// @notice mint implementation interfacing w Erc721BurningErc20OnMint contract
 
     function mint() public override nonReentrant returns (uint256) {
-        if (mintCounter >= TOTAL_SUPPLY) {
+        require(stage == MintPhase.FJORD, "Fjord drop is not active");
+       if (mintCounter >= TOTAL_SUPPLY) {
             revert FJORD_TotalMinted();
         }  else  {
             unchecked {
@@ -148,6 +149,7 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
         //cache the current minted amount by the wallet address
         uint256 totalMinted = mintPerWhitelistedWallet[msg.sender];
         uint256 whitelistAllocation = 100;
+          require(stage == MintPhase.WHITELIST, "Whitelist Mint is disabled");
         if (msg.value != PRICE_PER_WHITELIST_NFT * amount) {
             revert FJORD_InexactPayment();
         } else if(mintCounter + amount > whitelistAllocation ){
@@ -175,9 +177,8 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
 
     
     function publicMint(uint256 _amount) public payable {
-    if (mintCounter == TOTAL_SUPPLY) {
-            revert FJORD_TotalMinted();
-        } else if (msg.value != PRICE_PER_PUBLIC_MINT * _amount) {
+        require(stage == MintPhase.PUBLIC, "Public Mint is disabled");
+         if (msg.value != PRICE_PER_PUBLIC_MINT * _amount) {
             revert FJORD_InexactPayment();
         } else if (mintCounter + _amount > TOTAL_SUPPLY){
             revert FJORD_MaxMintExceeded();
@@ -200,11 +201,12 @@ function _beforeTokenTransfer(
         uint256 amount
     ) internal virtual override(Erc721BurningErc20OnMint) {
         require(stage != MintPhase.NOT_ACTIVE, "Minting is not active");
-        // check if it's a mint through the Fjord's contract
         if (stage == MintPhase.FJORD) {
             Erc721BurningErc20OnMint._beforeTokenTransfer(from, to, amount);
-        } else if(stage == MintPhase.PUBLIC || stage == MintPhase.WHITELIST) {
+        } else if(stage == MintPhase.PUBLIC || stage == MintPhase.ONLY_MINT_OWNER || stage == MintPhase.WHITELIST) {
             ERC721._beforeTokenTransfer(from, to, amount);
+        } else{
+        revert('Minting error');
         }
     }
 
