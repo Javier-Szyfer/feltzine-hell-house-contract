@@ -51,7 +51,7 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
         "ipfs://QmdyYCtUsVsC5ymr7b4txQ6hXHpLXtJU7JXCDuHEJdXnRe";
     uint256 public whitelistEndDate;
     uint256 private MAX_WHITELIST_MINT = 100;
-    uint256 private MAX_MINT_COUNTER;
+    uint256 public MAX_MINT_COUNTER;
     uint256 private constant PRICE_PER_WHITELIST_NFT = 0.02 ether;
     bytes32 public whiteListSaleMerkleRoot;
     uint32 private constant MAX_MINT_PER_WHITELIST_WALLET = 2;
@@ -150,7 +150,7 @@ contract FjordDrop is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981 {
         uint256 totalMinted = mintPerWhitelistedWallet[msg.sender];
         if (msg.value != PRICE_PER_WHITELIST_NFT * amount) {
             revert FJORD_InexactPayment();
-        } else if(MAX_MINT_COUNTER > MAX_MINT_PER_WHITELIST_WALLET){
+        } else if(MAX_MINT_COUNTER >= MAX_MINT_PER_WHITELIST_WALLET){
             revert('whitelist mint  exceeded');
         } else if (block.timestamp >= whitelistEndDate) {
             revert FJORD_WhitelistMintEnded();
