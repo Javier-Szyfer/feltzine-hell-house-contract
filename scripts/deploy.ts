@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 async function main() {
   const FjordDrop = await ethers.getContractFactory("HellHouse");
   const fjordDrop = await FjordDrop.deploy(
-    "ipfs://Qmag7Hgh3C2igYajdYFtLgE132yjEgwjAda4x4HBXj8tNv/"
+    "ipfs://QmUa6D2gDfwSKQybHWYc8ts8bd6nPuQAx6ZUwHdF3ivMBh/"
   );
 
   await fjordDrop.deployed();

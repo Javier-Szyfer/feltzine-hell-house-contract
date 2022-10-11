@@ -6,12 +6,16 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 //AlchemistCoin
 import "@alchemist.wtf/token-extensions/contracts/Erc721BurningErc20OnMint.sol";
 
-//   _____    _ _   ______                     _____ _               _
-//  |  ___|__| | |_|__  (_)_ __   ___  __  __ |  ___(_) ___  _ __ __| |
-//  | |_ / _ \ | __| / /| | '_ \ / _ \ \ \/ / | |_  | |/ _ \| '__/ _` |
-//  |  _|  __/ | |_ / /_| | | | |  __/  >  <  |  _| | | (_) | | | (_| |
-//  |_|  \___|_|\__/____|_|_| |_|\___| /_/\_\ |_|  _/ |\___/|_|  \__,_|
-//                                                |__/
+
+//    ▄█    █▄       ▄████████  ▄█        ▄█               ▄█    █▄     ▄██████▄  ███    █▄     ▄████████    ▄████████ 
+//   ███    ███     ███    ███ ███       ███              ███    ███   ███    ███ ███    ███   ███    ███   ███    ███ 
+//   ███    ███     ███    █▀  ███       ███              ███    ███   ███    ███ ███    ███   ███    █▀    ███    █▀  
+//  ▄███▄▄▄▄███▄▄  ▄███▄▄▄     ███       ███             ▄███▄▄▄▄███▄▄ ███    ███ ███    ███   ███         ▄███▄▄▄     
+// ▀▀███▀▀▀▀███▀  ▀▀███▀▀▀     ███       ███            ▀▀███▀▀▀▀███▀  ███    ███ ███    ███ ▀███████████ ▀▀███▀▀▀     
+//   ███    ███     ███    █▄  ███       ███              ███    ███   ███    ███ ███    ███          ███   ███    █▄  
+//   ███    ███     ███    ███ ███▌    ▄ ███▌    ▄        ███    ███   ███    ███ ███    ███    ▄█    ███   ███    ███ 
+//   ███    █▀      ██████████ █████▄▄██ █████▄▄██        ███    █▀     ▀██████▀  ████████▀   ▄████████▀    ██████████ 
+//                             ▀         ▀                                                                             
 
 /*
  @title Hell House | FELT Zine x Fjord Drop 2
@@ -45,7 +49,7 @@ contract HellHouse is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981{
     string public customBaseURI;
     string public contractURI =
         "ipfs://QmZvf1ZS2nnFh6sj8G61TmzLetvB82458SXU1TCNqLZD6u";
-    uint256 private PRICE_PER_PUBLIC_MINT = 0.02 ether;
+    uint256 private PRICE_PER_PUBLIC_MINT;
 
     enum MintPhase {
         INACTIVE,
@@ -118,7 +122,6 @@ contract HellHouse is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981{
         }
     }
 
-
     function _beforeTokenTransfer(
         address from,
         address to,
@@ -177,8 +180,8 @@ contract HellHouse is Erc721BurningErc20OnMint, ReentrancyGuard, IERC2981{
 
     //PAYOUT ADDRESSES
     address private constant feltzine =
-        0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-    address private constant dev = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
+        0x5e080D8b14c1DA5936509c2c9EF0168A19304202;
+    address private constant dev = 0x52aA63A67b15e3C2F201c9422cAC1e81bD6ea847;
 
     //@notice : withdraws the royalties to the addresses above
     function withdraw() public nonReentrant onlyOwner {

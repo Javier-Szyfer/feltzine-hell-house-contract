@@ -1,6 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { ethers, waffle } from "hardhat";
+import { ethers } from "hardhat";
 
 describe("FjordDrop", function () {
   async function deployFjordDrop() {
@@ -15,7 +15,7 @@ describe("FjordDrop", function () {
       await ethers.getSigners();
     const FjordDrop = await ethers.getContractFactory("HellHouse");
     const fjordDrop = await FjordDrop.deploy(
-      "ipfs://Qmag7Hgh3C2igYajdYFtLgE132yjEgwjAda4x4HBXj8tNv/"
+      "ipfs://QmUa6D2gDfwSKQybHWYc8ts8bd6nPuQAx6ZUwHdF3ivMBh/"
     );
 
     return {
@@ -56,7 +56,7 @@ describe("FjordDrop", function () {
     it("Should deploy and set the right customBaseURI", async function () {
       const { fjordDrop } = await loadFixture(deployFjordDrop);
       expect(await fjordDrop.customBaseURI()).to.equal(
-        "ipfs://Qmag7Hgh3C2igYajdYFtLgE132yjEgwjAda4x4HBXj8tNv/"
+        "ipfs://QmUa6D2gDfwSKQybHWYc8ts8bd6nPuQAx6ZUwHdF3ivMBh/"
       );
     });
     it("Should have the right contractURI", async function () {
@@ -128,7 +128,7 @@ describe("FjordDrop", function () {
         fjordDrop.connect(acc2).publicMint(1, {
           value: oneNFTPrice,
         })
-      ).to.be.revertedWith("FJORD_InexactPayment()");
+      ).to.be.revertedWith("FJORD__InexactPayment()");
     });
     it("Mints 1", async function () {
       const { fjordDrop, acc2, oneNFTPrice } = await loadFixture(
@@ -196,7 +196,7 @@ describe("FjordDrop", function () {
         deployFjordDrop
       );
       //testing with the whitelisted address and function
-      const provider = waffle.provider;
+      const provider = ethers.provider;
       //balance before receiving ether
       const contractBalanceBeforeReceivingEther = await provider.getBalance(
         fjordDrop.address
@@ -256,4 +256,17 @@ describe("FjordDrop", function () {
       expect(await fjordDrop.customBaseURI()).to.equal("test");
     });
   });
+  // describe("Can burn tokens", function () {
+  //   it("Burns the token", async function () {
+  //     const { fjordDrop, oneNFTPrice, acc2 } = await loadFixture(
+  //       deployFjordDrop
+  //     );
+  //     await fjordDrop.setMintStage(2);
+  //     await fjordDrop.connect(acc2).publicMint(1, {
+  //       value: oneNFTPrice,
+  //     });
+  //     await fjordDrop.connect(acc2).burn(1);
+  //     expect(await fjordDrop.balanceOf(acc2.address)).to.equal(0);
+  //   });
+  // });
 });
